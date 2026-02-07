@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { User, Store, Bell, Shield, Loader2, Save, Moon, Sun } from 'lucide-react';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/inventory/AppSidebar';
 import { Header } from '@/components/inventory/Header';
@@ -11,12 +12,14 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
+import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 
 const Settings = () => {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [settings, setSettings] = useState({
     businessName: '',
     lowStockThreshold: 10,
@@ -24,12 +27,46 @@ const Settings = () => {
     pushNotifications: false,
   });
 
+  // Load profile data from Firebase
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      
+      try {
+        const profileDoc = await getDoc(doc(db, 'profiles', user.uid));
+        if (profileDoc.exists()) {
+          const data = profileDoc.data();
+          setSettings(prev => ({
+            ...prev,
+            businessName: data.businessName || '',
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [user]);
+
   const handleSave = async () => {
+    if (!user) return;
+    
     setLoading(true);
-    // Simulate save
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setLoading(false);
-    toast.success('Settings saved successfully');
+    try {
+      await updateDoc(doc(db, 'profiles', user.uid), {
+        businessName: settings.businessName.trim(),
+        updatedAt: new Date().toISOString(),
+      });
+      toast.success('Settings saved successfully');
+    } catch (error: any) {
+      console.error('Error saving settings:', error);
+      toast.error('Failed to save settings');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleDarkMode = () => {
@@ -51,7 +88,7 @@ const Settings = () => {
               <p className="text-muted-foreground">Manage your account and preferences</p>
             </div>
 
-            <div className="space-y-6 max-w-2xl">
+            <div className="grid gap-6 lg:grid-cols-2">
               {/* Profile Settings */}
               <Card>
                 <CardHeader>

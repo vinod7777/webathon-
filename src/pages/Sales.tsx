@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Calendar, Search, TrendingUp, DollarSign, ShoppingCart, Loader2 } from 'lucide-react';
+import { Calendar, Search, TrendingUp, DollarSign, ShoppingCart, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { useInventory } from '@/hooks/useInventory';
 import { AppSidebar } from '@/components/inventory/AppSidebar';
@@ -7,6 +7,7 @@ import { Header } from '@/components/inventory/Header';
 import { StatsCard } from '@/components/inventory/StatsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -18,14 +19,33 @@ import {
 import { format, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { formatCurrency } from '@/utils/currency';
 
+const ITEMS_PER_PAGE = 10;
+
 const Sales = () => {
   const { sales, loading, addProduct } = useInventory();
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Filter sales
   const filteredSales = sales.filter(sale =>
     sale.productName.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredSales.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedSales = filteredSales.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  // Reset to first page when search changes
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -49,8 +69,6 @@ const Sales = () => {
       averageOrderValue,
     };
   }, [sales]);
-
-  // formatCurrency imported from utils/currency
 
   if (loading) {
     return (
@@ -109,7 +127,7 @@ const Sales = () => {
                     <Input
                       placeholder="Search by product..."
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => handleSearchChange(e.target.value)}
                       className="pl-10"
                     />
                   </div>
@@ -123,32 +141,78 @@ const Sales = () => {
                     <p className="text-sm">Sales will appear here when you sell products</p>
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Product</TableHead>
-                        <TableHead className="text-right">Quantity</TableHead>
-                        <TableHead className="text-right">Unit Price</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredSales.map((sale) => (
-                        <TableRow key={sale.id}>
-                          <TableCell className="text-muted-foreground">
-                            {format(sale.date, 'MMM d, yyyy h:mm a')}
-                          </TableCell>
-                          <TableCell className="font-medium">{sale.productName}</TableCell>
-                          <TableCell className="text-right">{sale.quantity}</TableCell>
-                          <TableCell className="text-right">{formatCurrency(sale.unitPrice)}</TableCell>
-                          <TableCell className="text-right font-medium text-green-600">
-                            {formatCurrency(sale.totalAmount)}
-                          </TableCell>
+                  <>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Product</TableHead>
+                          <TableHead className="text-right">Quantity</TableHead>
+                          <TableHead className="text-right">Unit Price</TableHead>
+                          <TableHead className="text-right">Total</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {paginatedSales.map((sale) => (
+                          <TableRow key={sale.id}>
+                            <TableCell className="text-muted-foreground">
+                              {format(sale.date, 'MMM d, yyyy h:mm a')}
+                            </TableCell>
+                            <TableCell className="font-medium">{sale.productName}</TableCell>
+                            <TableCell className="text-right">{sale.quantity}</TableCell>
+                            <TableCell className="text-right">{formatCurrency(sale.unitPrice)}</TableCell>
+                            <TableCell className="text-right font-medium text-success">
+                              {formatCurrency(sale.totalAmount)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-between pt-4 border-t mt-4">
+                        <p className="text-sm text-muted-foreground">
+                          Showing {startIndex + 1}-{Math.min(endIndex, filteredSales.length)} of {filteredSales.length} sales
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => goToPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="h-8 px-2"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                            <span className="sr-only sm:not-sr-only sm:ml-1">Previous</span>
+                          </Button>
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                              <Button
+                                key={page}
+                                variant={currentPage === page ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => goToPage(page)}
+                                className="h-8 w-8 p-0"
+                              >
+                                {page}
+                              </Button>
+                            ))}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => goToPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="h-8 px-2"
+                          >
+                            <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>

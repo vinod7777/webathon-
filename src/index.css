@@ -41,6 +41,14 @@
     --danger: 0 84% 60%;
     --danger-foreground: 0 0% 100%;
 
+    /* Chart colors - vibrant and distinct */
+    --chart-1: 213 55% 25%;
+    --chart-2: 22 90% 55%;
+    --chart-3: 187 70% 40%;
+    --chart-4: 142 76% 36%;
+    --chart-5: 262 80% 55%;
+    --chart-6: 340 75% 55%;
+
     --border: 213 25% 88%;
     --input: 213 25% 88%;
     --ring: 213 55% 25%;
@@ -93,6 +101,14 @@
     --warning-foreground: 0 0% 100%;
     --danger: 0 63% 45%;
     --danger-foreground: 0 0% 100%;
+
+    /* Chart colors - vibrant for dark mode */
+    --chart-1: 213 70% 55%;
+    --chart-2: 22 90% 60%;
+    --chart-3: 187 70% 50%;
+    --chart-4: 142 76% 45%;
+    --chart-5: 262 80% 65%;
+    --chart-6: 340 75% 60%;
 
     --border: 213 40% 20%;
     --input: 213 40% 20%;

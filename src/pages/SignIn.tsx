@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useAuth } from '@/contexts/AuthContext';
+import { useMaintenanceMode } from '@/contexts/MaintenanceContext';
 import { toast } from 'sonner';
 import logo from '@/assets/logo.png';
 
@@ -28,6 +29,7 @@ type SignInFormData = z.infer<typeof signInSchema>;
 const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
+  const { settings, isLoading: maintenanceLoading } = useMaintenanceMode();
   const navigate = useNavigate();
 
   const form = useForm<SignInFormData>({
@@ -39,6 +41,12 @@ const SignIn = () => {
   });
 
   const onSubmit = async (data: SignInFormData) => {
+    // Block login during maintenance mode
+    if (settings.maintenanceMode) {
+      toast.error('Login is disabled during maintenance. Please try again later.');
+      return;
+    }
+
     setIsLoading(true);
     const { error } = await signIn(data.email, data.password);
     setIsLoading(false);
@@ -62,6 +70,19 @@ const SignIn = () => {
           <p className="text-muted-foreground mt-2">Sign in to your account</p>
         </div>
 
+        {/* Maintenance Mode Warning */}
+        {!maintenanceLoading && settings.maintenanceMode && (
+          <div className="bg-warning/10 border border-warning/30 rounded-lg p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-warning">Maintenance Mode Active</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Login is currently disabled. Please try again later.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="rounded-xl border bg-card p-8 card-shadow">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -72,7 +93,12 @@ const SignIn = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="you@example.com" {...field} />
+                      <Input 
+                        type="email" 
+                        placeholder="you@example.com" 
+                        disabled={settings.maintenanceMode}
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -86,14 +112,23 @@ const SignIn = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input 
+                        type="password" 
+                        placeholder="••••••••" 
+                        disabled={settings.maintenanceMode}
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isLoading || settings.maintenanceMode}
+              >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Sign In
               </Button>

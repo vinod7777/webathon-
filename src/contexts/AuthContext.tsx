@@ -13,7 +13,7 @@ import { auth, db } from '@/lib/firebase';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string, displayName: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, displayName: string, businessName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, displayName: string) => {
+  const signUp = async (email: string, password: string, displayName: string, businessName: string) => {
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
       
@@ -44,6 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await setDoc(doc(db, 'profiles', user.uid), {
         userId: user.uid,
         displayName,
+        businessName,
         email,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

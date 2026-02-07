@@ -5,7 +5,6 @@ import {
   BarChart3,
   Settings,
   HelpCircle,
-  Home,
   Package
 } from 'lucide-react';
 import logo from '@/assets/logo.png';
@@ -25,7 +24,6 @@ import {
 } from '@/components/ui/sidebar';
 
 const mainNavItems = [
-  { title: 'Home', url: '/', icon: Home },
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Products', url: '/products', icon: Package },
   { title: 'Sales', url: '/sales', icon: ShoppingCart },
@@ -62,7 +60,7 @@ export function AppSidebar() {
                       to={item.url} 
                       end={item.url === '/'}
                       className="flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                      activeClassName="bg-sidebar-primary text-sidebar-primary-foreground font-medium"
+                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
                       <span>{item.title}</span>
@@ -84,7 +82,7 @@ export function AppSidebar() {
                     <NavLink 
                       to={item.url}
                       className="flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                      activeClassName="bg-sidebar-primary text-sidebar-primary-foreground font-medium"
+                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
                       <span>{item.title}</span>

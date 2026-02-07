@@ -1,4 +1,5 @@
-import { HelpCircle, Book, MessageCircle, Mail, ExternalLink } from 'lucide-react';
+import { HelpCircle, Book, MessageCircle, Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/inventory/AppSidebar';
 import { Header } from '@/components/inventory/Header';
@@ -64,15 +65,11 @@ const Help = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Book className="mr-2 h-4 w-4" />
-                      Getting Started Guide
-                      <ExternalLink className="ml-auto h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <HelpCircle className="mr-2 h-4 w-4" />
-                      Video Tutorials
-                      <ExternalLink className="ml-auto h-4 w-4" />
+                    <Button variant="outline" className="w-full justify-start" asChild>
+                      <Link to="/getting-started">
+                        <Book className="mr-2 h-4 w-4" />
+                        Getting Started Guide
+                      </Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -85,13 +82,11 @@ const Help = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Mail className="mr-2 h-4 w-4" />
-                      Email Support
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      Live Chat
+                    <Button variant="outline" className="w-full justify-start" asChild>
+                      <Link to="/email-support">
+                        <Mail className="mr-2 h-4 w-4" />
+                        Email Support
+                      </Link>
                     </Button>
                     <p className="text-sm text-muted-foreground">
                       Support available Mon-Fri, 9am-5pm EST

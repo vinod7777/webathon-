@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,12 +15,14 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useAuth } from '@/contexts/AuthContext';
+import { useMaintenanceMode } from '@/contexts/MaintenanceContext';
 import { toast } from 'sonner';
 import logo from '@/assets/logo.png';
 
 const signUpSchema = z.object({
-  displayName: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email'),
+  displayName: z.string().min(2, 'Name must be at least 2 characters').max(100),
+  businessName: z.string().min(2, 'Business name must be at least 2 characters').max(100),
+  email: z.string().email('Please enter a valid email').max(255),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -33,12 +35,17 @@ type SignUpFormData = z.infer<typeof signUpSchema>;
 const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
+  const { settings, isLoading: maintenanceLoading } = useMaintenanceMode();
   const navigate = useNavigate();
+
+  // Check if signups are blocked (either by maintenance mode or allowNewSignups setting)
+  const signupsBlocked = settings.maintenanceMode || !settings.allowNewSignups;
 
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       displayName: '',
+      businessName: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -46,8 +53,18 @@ const SignUp = () => {
   });
 
   const onSubmit = async (data: SignUpFormData) => {
+    // Block signup during maintenance mode or if signups are disabled
+    if (signupsBlocked) {
+      if (settings.maintenanceMode) {
+        toast.error('Registration is disabled during maintenance. Please try again later.');
+      } else {
+        toast.error('New registrations are currently disabled.');
+      }
+      return;
+    }
+
     setIsLoading(true);
-    const { error } = await signUp(data.email, data.password, data.displayName);
+    const { error } = await signUp(data.email, data.password, data.displayName, data.businessName);
     setIsLoading(false);
 
     if (error) {
@@ -69,6 +86,24 @@ const SignUp = () => {
           <p className="text-muted-foreground mt-2">Start managing your inventory today</p>
         </div>
 
+        {/* Maintenance/Signup Blocked Warning */}
+        {!maintenanceLoading && signupsBlocked && (
+          <div className="bg-warning/10 border border-warning/30 rounded-lg p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-warning">
+                {settings.maintenanceMode ? 'Maintenance Mode Active' : 'Registrations Disabled'}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {settings.maintenanceMode 
+                  ? 'Registration is currently disabled. Please try again later.'
+                  : 'New registrations are currently closed. Please check back later.'
+                }
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="rounded-xl border bg-card p-8 card-shadow">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -79,7 +114,21 @@ const SignUp = () => {
                   <FormItem>
                     <FormLabel>Your Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="John Doe" {...field} />
+                      <Input placeholder="John Doe" disabled={signupsBlocked} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="businessName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Business Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="My Store" disabled={signupsBlocked} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -93,7 +142,7 @@ const SignUp = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="you@example.com" {...field} />
+                      <Input type="email" placeholder="you@example.com" disabled={signupsBlocked} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -107,7 +156,7 @@ const SignUp = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="••••••••" disabled={signupsBlocked} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -121,14 +170,14 @@ const SignUp = () => {
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="••••••••" disabled={signupsBlocked} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading || signupsBlocked}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Account
               </Button>

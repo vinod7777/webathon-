@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pencil, Trash2, ShoppingCart } from 'lucide-react';
+import { Pencil, Trash2, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -22,9 +22,12 @@ interface ProductTableProps {
   onSell: (product: Product) => void;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export const ProductTable = ({ products, onEdit, onDelete, onSell }: ProductTableProps) => {
   const [sortField, setSortField] = useState<keyof Product>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const sortedProducts = [...products].sort((a, b) => {
     const aValue = a[sortField];
@@ -43,6 +46,12 @@ export const ProductTable = ({ products, onEdit, onDelete, onSell }: ProductTabl
     return 0;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(sortedProducts.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedProducts = sortedProducts.slice(startIndex, endIndex);
+
   const handleSort = (field: keyof Product) => {
     if (sortField === field) {
       setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -50,9 +59,12 @@ export const ProductTable = ({ products, onEdit, onDelete, onSell }: ProductTabl
       setSortField(field);
       setSortDirection('asc');
     }
+    setCurrentPage(1); // Reset to first page on sort
   };
 
-  // formatCurrency imported from utils/currency
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
 
   return (
     <div className="rounded-lg border bg-card card-shadow overflow-hidden">
@@ -101,14 +113,14 @@ export const ProductTable = ({ products, onEdit, onDelete, onSell }: ProductTabl
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedProducts.length === 0 ? (
+          {paginatedProducts.length === 0 ? (
             <TableRow>
               <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                 No products found. Add your first product to get started.
               </TableCell>
             </TableRow>
           ) : (
-            sortedProducts.map((product, index) => {
+            paginatedProducts.map((product, index) => {
               const status = getStockStatus(product.quantity, product.minStock);
               return (
                 <TableRow
@@ -176,6 +188,50 @@ export const ProductTable = ({ products, onEdit, onDelete, onSell }: ProductTabl
           )}
         </TableBody>
       </Table>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+          <p className="text-sm text-muted-foreground">
+            Showing {startIndex + 1}-{Math.min(endIndex, sortedProducts.length)} of {sortedProducts.length} products
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="h-8 px-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span className="sr-only sm:not-sr-only sm:ml-1">Previous</span>
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => goToPage(page)}
+                  className="h-8 w-8 p-0"
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="h-8 px-2"
+            >
+              <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

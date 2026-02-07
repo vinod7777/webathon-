@@ -30,7 +30,14 @@ import { exportToExcel, exportToPDF } from '@/utils/exportReport';
 import { toast } from 'sonner';
 import { formatCurrency, getCurrencySymbol } from '@/utils/currency';
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+const COLORS = [
+  'hsl(var(--chart-1))', 
+  'hsl(var(--chart-2))', 
+  'hsl(var(--chart-3))', 
+  'hsl(var(--chart-4))', 
+  'hsl(var(--chart-5))',
+  'hsl(var(--chart-6))',
+];
 
 const Reports = () => {
   const {
@@ -261,7 +268,11 @@ const Reports = () => {
                           formatter={(value: number) => formatCurrency(value)}
                           labelFormatter={(label) => `Product: ${label}`}
                         />
-                        <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                        <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
+                          {topProducts.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                   )}
@@ -289,7 +300,11 @@ const Reports = () => {
                           formatter={(value: number) => formatCurrency(value)}
                         />
                         <Legend />
-                        <Bar dataKey="value" name="Inventory Value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="value" name="Inventory Value" radius={[4, 4, 0, 0]}>
+                          {categoryData.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                   )}
