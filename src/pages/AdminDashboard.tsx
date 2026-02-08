@@ -385,19 +385,7 @@ const AdminDashboard = () => {
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
             {/* Key Metrics */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Priority Requests</CardTitle>
-                  <Flame className="h-4 w-4 text-destructive" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-destructive">
-                    {supportEmails.filter(e => isUrgent(e) && e.status !== 'resolved').length}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Urgent attention needed</p>
-                </CardContent>
-              </Card>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Users</CardTitle>

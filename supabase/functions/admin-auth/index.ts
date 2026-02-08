@@ -17,16 +17,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL');
-    const ADMIN_PASSWORD = Deno.env.get('ADMIN_PASSWORD');
-
-    if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-      console.error('Admin credentials not configured');
-      return new Response(
-        JSON.stringify({ error: 'Admin credentials not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    // Hardcoded admin credentials
+    const ADMIN_EMAIL = 'admin@gamil.com';
+    const ADMIN_PASSWORD = '123456789aA@';
 
     const { email, password }: AdminLoginRequest = await req.json();
 
