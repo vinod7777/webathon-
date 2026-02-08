@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { BarChart3, TrendingUp, Package, DollarSign, Loader2, Download, FileSpreadsheet, FileText } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { useInventory } from '@/hooks/useInventory';
@@ -31,12 +32,12 @@ import { toast } from 'sonner';
 import { formatCurrency, getCurrencySymbol } from '@/utils/currency';
 
 const COLORS = [
-  'hsl(var(--chart-1))', 
-  'hsl(var(--chart-2))', 
-  'hsl(var(--chart-3))', 
-  'hsl(var(--chart-4))', 
-  'hsl(var(--chart-5))',
-  'hsl(var(--chart-6))',
+  '#FF00FF', // Neon Magenta
+  '#00FFFF', // Neon Cyan
+  '#39FF14', // Neon Green
+  '#FFFF00', // Neon Yellow
+  '#FF5F1F', // Neon Orange
+  '#BF00FF', // Neon Purple
 ];
 
 const Reports = () => {
@@ -48,6 +49,12 @@ const Reports = () => {
     getTotalInventoryValue,
     getTotalSalesValue,
   } = useInventory();
+
+  const { setTheme } = useTheme();
+
+  useEffect(() => {
+    setTheme('dark');
+  }, [setTheme]);
 
   // formatCurrency imported from utils/currency
 
@@ -213,7 +220,7 @@ const Reports = () => {
 
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Category Distribution */}
-              <Card>
+              <Card className="shadow-[0_0_15px_rgba(0,255,255,0.2)] border-cyan-500/20 hover:shadow-[0_0_25px_rgba(0,255,255,0.4)] hover:scale-[1.02] transition-all duration-300">
                 <CardHeader>
                   <CardTitle>Inventory by Category</CardTitle>
                   <CardDescription>Product distribution across categories</CardDescription>
@@ -248,7 +255,7 @@ const Reports = () => {
               </Card>
 
               {/* Top Selling Products */}
-              <Card>
+              <Card className="shadow-[0_0_15px_rgba(255,0,255,0.2)] border-pink-500/20 hover:shadow-[0_0_25px_rgba(255,0,255,0.4)] hover:scale-[1.02] transition-all duration-300">
                 <CardHeader>
                   <CardTitle>Top Selling Products</CardTitle>
                   <CardDescription>Products by revenue</CardDescription>
@@ -280,7 +287,7 @@ const Reports = () => {
               </Card>
 
               {/* Category Value */}
-              <Card className="lg:col-span-2">
+              <Card className="lg:col-span-2 shadow-[0_0_15px_rgba(57,255,20,0.2)] border-green-500/20 hover:shadow-[0_0_25px_rgba(57,255,20,0.4)] hover:scale-[1.02] transition-all duration-300">
                 <CardHeader>
                   <CardTitle>Category Value Distribution</CardTitle>
                   <CardDescription>Total inventory value by category</CardDescription>

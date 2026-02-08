@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Settings, Loader2, RefreshCw, Mail, ChevronLeft, ChevronRight, X, AlertTriangle, Eye, Calendar, Building2, User, Flame } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { Users, Settings, Loader2, RefreshCw, Mail, ChevronLeft, ChevronRight, X, AlertTriangle, Eye, Calendar, Building2, User, Flame, Trash2 } from 'lucide-react';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { collection, query, orderBy, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { Check, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
@@ -90,6 +91,7 @@ const ITEMS_PER_PAGE = 10;
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { adminLogout } = useAdminAuth();
+  const { setTheme } = useTheme();
   const { settings, updateSettings, isLoading: settingsLoading } = useMaintenanceMode();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [supportEmails, setSupportEmails] = useState<SupportEmail[]>([]);
@@ -104,6 +106,7 @@ const AdminDashboard = () => {
   const [showMaintenanceConfirm, setShowMaintenanceConfirm] = useState(false);
   const [pendingMaintenanceMode, setPendingMaintenanceMode] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -156,6 +159,10 @@ const AdminDashboard = () => {
       setEmailsLoading(false);
     }
   };
+
+  useEffect(() => {
+    setTheme('dark');
+  }, [setTheme]);
 
   useEffect(() => {
     fetchUsers();
@@ -299,6 +306,21 @@ const AdminDashboard = () => {
       toast.error('Failed to update setting');
     } finally {
       setSavingSettings(false);
+    }
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    
+    try {
+      await deleteDoc(doc(db, 'profiles', userToDelete.id));
+      setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
+      toast.success('User profile deleted successfully');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast.error('Failed to delete user');
+    } finally {
+      setUserToDelete(null);
     }
   };
 
@@ -554,17 +576,31 @@ const AdminDashboard = () => {
                             {format(user.createdAt, 'MMM d, yyyy')}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenUser(user);
-                              }}
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
-                            </Button>
+                            <div className="flex items-center justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenUser(user);
+                                }}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                View
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setUserToDelete(user);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Delete
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -1106,6 +1142,27 @@ const AdminDashboard = () => {
               className="bg-destructive hover:bg-destructive/90"
             >
               Enable Maintenance Mode
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{userToDelete?.displayName || userToDelete?.email}</strong>? 
+              This action cannot be undone. This will remove their profile data from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteUser}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Delete User
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

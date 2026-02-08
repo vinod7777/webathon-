@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from 'next-themes';
 import { Shield, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,10 +13,15 @@ import logo from '@/assets/logo.png';
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { adminLogin } = useAdminAuth();
+  const { setTheme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setTheme('dark');
+  }, [setTheme]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +48,7 @@ const AdminLogin = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <img src={logo} alt="StockFlow" className="h-16" />
+            <img src={logo} alt="StockFlow" className="h-24" />
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
             <Shield className="h-6 w-6 text-primary" />

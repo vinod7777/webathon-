@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { Package, AlertTriangle, DollarSign, TrendingUp, Loader2 } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { useInventory, Product } from '@/hooks/useInventory';
@@ -29,6 +30,7 @@ const Dashboard = () => {
     getTotalSalesValue,
   } = useInventory();
 
+  const { setTheme } = useTheme();
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [isSellDialogOpen, setIsSellDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -37,6 +39,10 @@ const Dashboard = () => {
   const lowStockProducts = getLowStockProducts();
   const outOfStockProducts = getOutOfStockProducts();
   const alertCount = lowStockProducts.length + outOfStockProducts.length;
+
+  useEffect(() => {
+    setTheme('dark');
+  }, [setTheme]);
 
   // formatCurrency imported from utils/currency
 

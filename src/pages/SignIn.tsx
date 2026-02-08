@@ -64,7 +64,7 @@ const SignIn = () => {
       <div className="w-full max-w-md space-y-8 animate-fade-in">
         <div className="text-center">
           <Link to="/" className="inline-flex items-center gap-3 mb-8">
-            <img src={logo} alt="Inventory Management" className="h-16 w-auto" />
+            <img src={logo} alt="Inventory Management" className="h-24 w-auto" />
           </Link>
           <h1 className="text-2xl font-bold">Welcome back</h1>
           <p className="text-muted-foreground mt-2">Sign in to your account</p>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { 
   BarChart3, 
   Bell, 
@@ -132,6 +133,12 @@ const TiltCard = ({ children, className }: { children: React.ReactNode; classNam
 const Index = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
+  const { setTheme } = useTheme();
+
+  useEffect(() => {
+    setTheme('dark');
+  }, [setTheme]);
+
   const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
 
   const containerVariants = {
@@ -169,14 +176,14 @@ const Index = () => {
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="container flex h-16 items-center justify-between">
+        <div className="container flex h-20 items-center justify-between">
           <motion.div 
             className="flex items-center gap-3"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             <Link to="/">
-              <img src={logo} alt="Inventory Management" className="h-12 w-auto" />
+              <img src={logo} alt="Inventory Management" className="h-16 w-auto" />
             </Link>
           </motion.div>
           

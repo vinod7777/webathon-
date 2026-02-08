@@ -14,7 +14,7 @@ const Maintenance = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md text-center space-y-6 animate-fade-in">
-        <img src={logo} alt="StockFlow" className="h-16 mx-auto" />
+        <img src={logo} alt="StockFlow" className="h-24 mx-auto" />
         
         <div className="rounded-xl border bg-card p-8 card-shadow space-y-6">
           <div className="mx-auto w-16 h-16 rounded-full bg-warning/10 flex items-center justify-center">
